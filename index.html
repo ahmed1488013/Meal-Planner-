@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriPlan Meal Planner</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #6A994E;
+            color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .week-overview {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .day {
+            background-color: #F5F5F5;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .meal-section {
+            margin-top: 30px;
+        }
+        .meal-section h2 {
+            background-color: #6A994E;
+            color: #FFFFFF;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 0;
+            text-align: center;
+        }
+        .meal-card {
+            background-color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .meal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        .meal-card h3 {
+            margin: 0 0 10px;
+            color: #6A994E;
+        }
+        .meal-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .meal-card a {
+            color: #FFB703;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .meal-card a:hover {
+            text-decoration: underline;
+        }
+        .add-meal-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #FFB703;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .add-meal-btn:hover {
+            background-color: #D48D00;
+            transform: scale(1.05);
+        }
+        .add-meal-form {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #F9F9F9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .add-meal-form input, .add-meal-form textarea {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #CCC;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .add-meal-form input:focus, .add-meal-form textarea:focus {
+            border-color: #6A994E;
+            outline: none;
+        }
+        .add-meal-form button {
+            background-color: #6A994E;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .add-meal-form button:hover {
+            background-color: #4F7D33;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NutriPlan Meal Planner</h1>
+        </div>
+        
+        <div class="week-overview" id="week-overview">
+            <div class="day" onclick="showMeals('Monday')">Monday</div>
+            <div class="day" onclick="showMeals('Tuesday')">Tuesday</div>
+            <div class="day" onclick="showMeals('Wednesday')">Wednesday</div>
+            <div class="day" onclick="showMeals('Thursday')">Thursday</div>
+            <div class="day" onclick="showMeals('Friday')">Friday</div>
+            <div class="day" onclick="showMeals('Saturday')">Saturday</div>
+            <div class="day" onclick="showMeals('Sunday')">Sunday</div>
+        </div>
+        
+        <div class="meal-section" id="meal-section">
+            <h2 id="section-title">Meals for the Day</h2>
+            <div id="meal-cards"></div>
+            <button class="add-meal-btn" onclick="toggleMealForm()">Add New Meal</button>
+            <div class="add-meal-form" id="meal-form">
+                <input type="text" placeholder="Meal Name" id="meal-name">
+                <textarea placeholder="Ingredients" id="ingredients"></textarea>
+                <textarea placeholder="Nutritional Information" id="nutrition-info"></textarea>
+                <button onclick="addMeal()">Add Meal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const meals = {
+            Monday: [],
+            Tuesday: [],
+            Wednesday: [],
+            Thursday: [],
+            Friday: [],
+            Saturday: [],
+            Sunday: []
+        };
+        const mealSection = document.getElementById('meal-section');
+        const mealCards = document.getElementById('meal-cards');
+        const mealForm = document.getElementById('meal-form');
+        const sectionTitle = document.getElementById('section-title');
+        let currentDay = 'Monday';
+
+        function showMeals(day) {
+            currentDay = day;
+            sectionTitle.textContent = `Meals for ${day}`;
+            mealCards.innerHTML = '';
+            meals[day].forEach(meal => {
+                const mealCard = document.createElement('div');
+                mealCard.classList.add('meal-card');
+                mealCard.innerHTML = `
+                    <h3>${meal.name}</h3>
+                    <p>Ingredients: ${meal.ingredients}</p>
+                    <p>Nutritional Info: ${meal.nutrition}</p>
+                `;
+                mealCards.appendChild(mealCard);
+            });
+        }
+
+        function toggleMealForm() {
+            mealForm.style.display = mealForm.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addMeal() {
+            const name = document.getElementById('meal-name').value;
+            const ingredients = document.getElementById('ingredients').value;
+            const nutrition = document.getElementById('nutrition-info').value;
+
+            if (name && ingredients && nutrition) {
+                meals[currentDay].push({ name, ingredients, nutrition });
+                showMeals(currentDay);
+                mealForm.style.display = 'none';
+                document.getElementById('meal-name').value = '';
+                document.getElementById('ingredients').value = '';
+                document.getElementById('nutrition-info').value = '';
+            } else {
+                alert('Please fill in all fields to add a meal.');
+            }
+        }
+
+        // Load initial view
+        showMeals(currentDay);
+    </script>
+</body>
+</html>
